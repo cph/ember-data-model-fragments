@@ -1,9 +1,11 @@
+/* globals Proxy */
 import Ember from 'ember';
 import Store from 'ember-data/store';
 import Model from 'ember-data/model';
 import InternalModel from 'ember-data/-private/system/model/internal-model';
 import ContainerInstanceCache from 'ember-data/-private/system/store/container-instance-cache';
 import JSONSerializer from 'ember-data/serializers/json';
+import { HAS_NATIVE_PROXY } from 'ember-utils';
 import FragmentRootState from './states';
 import {
   internalModelFor,
@@ -369,6 +371,9 @@ function getFragmentTransform(owner, store, attributeType) {
   ContainerInstanceCachePrototype._fallbacksFor = function _modelFragmentsPatchedFallbacksFor(namespace, preferredKey) {
     if (namespace === 'serializer') {
       let model = this._store.modelFactoryFor(preferredKey);
+      if (HAS_NATIVE_PROXY && model instanceof Proxy) {
+        model = model.class;
+      }
       if (model && Fragment.detect(model)) {
         return [
           '-fragment',
